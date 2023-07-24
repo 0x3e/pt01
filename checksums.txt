@@ -1,0 +1,6 @@
+MD5 hash of PT01 (VPX 2023) 0x3e alpha01.vpx:
+6ec1d78917e6545af5b9c60a8677dff2
+CertUtil: -hashfile command completed successfully.
+SHA256 hash of PT01 (VPX 2023) 0x3e alpha01.vpx:
+2c0955180b92af7cb0d83110bead5c3516d2056cf4294641c612288c3eb98cb5
+CertUtil: -hashfile command completed successfully.
