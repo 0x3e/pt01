@@ -1,0 +1,20 @@
+debug world!
+WSH Version: 5.8
+ScriptEngine: VBScript 5.8
+Targets init
+create: test
+Target Init
+Target name set: test
+Trying Hit: test
+Target Hit: test
+array test
+Target Init
+Target Init
+Target Init
+Target name set: t1
+Target name set: t2
+Target name set: t3
+Target Hit: t1
+Target Hit: t2
+Target Hit: t3
+end of script

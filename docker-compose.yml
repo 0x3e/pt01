@@ -1,0 +1,17 @@
+version: "3.7"
+services:
+  wine-ubuntu:
+    init: true
+    build:
+      context: .
+      args:
+        NONE: 'NOTHING_SET_HERE'
+    ports:
+      - "3000:3000"
+    command: 'tail -f /dev/null'
+    env_file:
+      - ".env"
+    environment:
+      NO_ENV: 'nothin'
+    volumes:
+      - ".:/app"
