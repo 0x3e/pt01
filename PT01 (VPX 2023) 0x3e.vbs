@@ -481,11 +481,11 @@ Sub Gate003_Hit()
   If Gate003.UserValue > TableLevel AND OnMission = 0 Then
     Gate003.UserValue = TableLevel
 
-    mission = Get_mission()
+    mission = MissionGet()
 
     If MissionDone(mission) Then
       MissionDisplay "mm0" & mission, "cplt"
-      MissionTimer.enabled = true
+      DisplayTimer.enabled = true
       SetLightLevel Tr1li001, TableLevel
     Else
       OnMission = mission
@@ -497,7 +497,7 @@ Sub Gate003_Hit()
   SetLightLevel Tr1li001, Gate003.UserValue
 End Sub
 
-Function Get_mission()
+Function MissionGet()
   Dim i, t, mission: mission = 0
   For each t in Targets4
     If t.UserValue > TableLevel Then mission = mission + 2 ^ i
@@ -505,7 +505,7 @@ Function Get_mission()
     i = i + 1
   Next
   If mission = 0 Then mission = 8
-  Get_mission = mission
+  MissionGet = mission
 End Function
 
 Sub Gate003_Timer()
@@ -515,9 +515,10 @@ Sub Gate003_Timer()
   Gate004.Collidable = True
 End Sub
 
-Sub MissionTimer_timer()
-  If OnMission = 0 Then UpdateScores()
-  MissionTimer.enabled = false
+Sub DisplayTimer_Timer()
+  If OnMission = 0 AND PlayersPlayingGame <> 0 Then UpdateScores()
+  CreditsPlayerBall()
+  DisplayTimer.enabled = false
 End Sub
 
 Sub MissionScore(HitThing)
@@ -527,7 +528,7 @@ End Sub
 
 Sub MissionRun(DoThing)
  If OnMission < 1 Then Exit Sub
- MissionTimer.enabled = true
+ DisplayTimer.enabled = true
  Dim spinner : spinner = "A"
  Dim bumper : bumper = "W"
  Dim target : target = "X"
@@ -823,6 +824,9 @@ End Sub
 
 Sub TargetSet2CheckUp()
   Dim t, all_down, level: all_down = true:level = 0
+  Targets2Timer.enabled = False
+  Targets2Timer.enabled = True
+  CombosDo()
   For each t in Targets2
     If t.IsDropped = 0 Then all_down = false
     If level < t.UserValue Then level = t.UserValue
@@ -886,6 +890,9 @@ End Sub
 
 Sub TargetSet1CheckUp()
   Dim t, all_down, level: all_down = true:level = 0
+  Targets1Timer.enabled = False
+  Targets1Timer.enabled = True
+  CombosDo()
   For each t in Targets1
     If t.IsDropped = 0 Then all_down = false
     If level < t.UserValue Then level = t.UserValue
@@ -954,6 +961,9 @@ Sub Target008_Hit()
   Dim mission
   Dim t: Set  t = Target008
   Dim tl: Set tl = Tr1li025
+  Targets4Timer.enabled = False
+  Targets4Timer.enabled = True
+  CombosDo()
   AddBonus(2)
   MissionRun("target")
 
@@ -963,7 +973,7 @@ Sub Target008_Hit()
     Case true : t.UserValue = -1 : SetLightLevel tl, t.UserValue
   End Select
 
-  mission = Get_mission()
+  mission = MissionGet()
 
   If MissionDone(mission) Then
     SetLightLevel Tr1li001, TableLevel
@@ -977,6 +987,9 @@ Sub Target009_Hit()
   Dim mission
   Dim t: Set  t = Target009
   Dim tl: Set tl = Tr1li024
+  Targets4Timer.enabled = False
+  Targets4Timer.enabled = True
+  CombosDo()
   AddBonus(2)
   MissionRun("target")
   if OnMission > 0 Then Exit Sub
@@ -985,7 +998,7 @@ Sub Target009_Hit()
     Case true : t.UserValue = -1 : SetLightLevel tl, t.UserValue
   End Select
 
-  mission = Get_mission()
+  mission = MissionGet()
 
   If MissionDone(mission) Then
     SetLightLevel Tr1li001, TableLevel
@@ -999,6 +1012,9 @@ Sub Target010_Hit()
   Dim mission
   Dim t: Set  t = Target010
   Dim tl: Set tl = Tr1li023
+  Targets4Timer.enabled = False
+  Targets4Timer.enabled = True
+  CombosDo()
   AddBonus(2)
   MissionRun("target")
   if OnMission > 0 Then Exit Sub
@@ -1007,7 +1023,7 @@ Sub Target010_Hit()
     Case true : t.UserValue = -1 : SetLightLevel tl, t.UserValue
   End Select
 
-  mission = Get_mission()
+  mission = MissionGet()
 
   If MissionDone(mission) Then
     SetLightLevel Tr1li001, TableLevel
@@ -1020,6 +1036,9 @@ End Sub
 
 Sub TargetSet3CheckUp()
   Dim t, all_down, level: all_down = true:level = 0
+  Targets3Timer.enabled = False
+  Targets3Timer.enabled = True
+  CombosDo()
   For each t in Targets3
     debug.print "TargetSet3 t:" & t.Name & "isdropped:" & t.IsDropped
     If t.IsDropped = 0 Then all_down = false
@@ -1141,6 +1160,54 @@ Sub SetLightLevel(in_light, level)
     Case 4 : in_light.Color = RGB(255, 165, 0) : in_light.ColorFull = RGB(111,22, 0)
     Case Else : in_light.Color = RGB(255, 0, 0) : in_light.ColorFull = RGB(22,0, 0)
   End Select
+End Sub
+
+Sub Targets1Timer_Timer()
+  Targets1Timer.enabled = False
+End Sub
+
+Sub Targets2Timer_Timer()
+  Targets2Timer.enabled = False
+End Sub
+
+Sub Targets3Timer_Timer()
+  Targets3Timer.enabled = False
+End Sub
+
+Sub Targets4Timer_Timer()
+  Targets4Timer.enabled = False
+End Sub
+
+
+Sub CombosDo()
+  Dim target_timers:target_timers = 0
+  Dim out_text
+
+  If Targets1Timer.enabled = True Then target_timers = target_timers + 1
+  If Targets2Timer.enabled = True Then target_timers = target_timers + 2
+  If Targets3Timer.enabled = True Then target_timers = target_timers + 4
+  If Targets4Timer.enabled = True Then target_timers = target_timers + 8
+  Select Case target_timers
+    case 0, 1, 2, 4, 8
+      Exit Sub
+    case 3, 10
+      AddScore(2*TheLevel(TableLevel))
+      AddBonus(2)
+    case 5, 6, 9, 12
+      AddScore(4*TheLevel(TableLevel))
+      AddBonus(4)
+    case 7, 11, 13, 14
+      AddScore(8*TheLevel(TableLevel))
+      AddBonus(8)
+    case 15
+      AddScore(32*TheLevel(TableLevel))
+      AddBonus(32)
+  End Select
+  out_text = "cbo " & target_timers
+  debug.print out_text
+  PlayerBallText.Text = out_text
+  B2SSet 5, out_text
+  DisplayTimer.enabled = true
 End Sub
 
 Sub Trigger001_Hit()
@@ -1537,6 +1604,8 @@ Sub Drain_Hit()
       RightFlipper.RotateToStart
     End If
 	If BIP = 0 Then
+        OnMission = 0
+        CreditsPlayerBall()
         UpdateScores()
         EndCurrentPlayerTurn()
 	End If
