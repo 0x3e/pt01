@@ -34,7 +34,7 @@ Const UseB2S = True
 Const TableName = "PT01 (VPX 2023) 0x3e alpha01"
 
 Const GameBalls = 3
-Const EasyMode = false
+Const EasyMode = False
 
 
 Dim Credits: Credits = 2
@@ -95,6 +95,32 @@ Sub AddPlayer()
   CreditsPlayerBall()
   UpdateScore(PlayersPlayingGame)
 End Sub
+
+Sub SetEasyMode()
+  If EasyMode Then
+    LeftShield.IsDropped = 0
+    RightShield.IsDropped = 0
+    Guardian.IsDropped = 0
+    EasyPegL.Visible = True
+    EasyRubL.Visible = True
+    EasyRubL.Collidable = True
+    EasyPegR.Visible = True
+    EasyRubR.Visible = True
+    EasyRubR.Collidable = True
+  Else
+    LeftShield.IsDropped = 1
+    RightShield.IsDropped = 1
+    Guardian.IsDropped = 1
+    EasyPegL.Visible = False
+    EasyRubL.Visible = False
+    EasyRubL.Collidable = False
+    EasyPegR.Visible = False
+    EasyRubR.Visible = False
+    EasyRubR.Collidable = False
+  End If
+End Sub
+
+SetEasyMode()
 
 Sub ResetForNewGame()
   Dim i
@@ -1178,36 +1204,90 @@ Sub Targets4Timer_Timer()
   Targets4Timer.enabled = False
 End Sub
 
+Sub Spinners0Timer_Timer()
+  Spinners0Timer.enabled = False
+End Sub
+
+Sub Kickers0Timer_Timer()
+  Kickers0Timer.enabled = False
+End Sub
+
+Sub Orbits0Timer_Timer()
+  Orbits0Timer.enabled = False
+End Sub
+
 
 Sub CombosDo()
-  Dim target_timers:target_timers = 0
+  Dim target_timers : target_timers = 0
+  Dim combo_level : combo_level = 0
   Dim out_text
 
-  If Targets1Timer.enabled = True Then target_timers = target_timers + 1
-  If Targets2Timer.enabled = True Then target_timers = target_timers + 2
-  If Targets3Timer.enabled = True Then target_timers = target_timers + 4
-  If Targets4Timer.enabled = True Then target_timers = target_timers + 8
+  If Targets1Timer.enabled = True Then 
+    Targets1Timer.enabled = false
+    Targets1Timer.enabled = true
+    target_timers = target_timers + 1
+  End If
+  If Targets2Timer.enabled = True Then 
+    Targets2Timer.enabled = false
+    Targets2Timer.enabled = true
+    target_timers = target_timers + 2
+  End If
+  If Targets3Timer.enabled = True Then 
+    Targets3Timer.enabled = false
+    Targets3Timer.enabled = true
+    target_timers = target_timers + 4
+  End If
+  If Targets4Timer.enabled = True Then 
+    Targets4Timer.enabled = false
+    Targets4Timer.enabled = true
+    target_timers = target_timers + 8
+  End If
+
+
   Select Case target_timers
-    case 0, 1, 2, 4, 8
-      Exit Sub
+    case 1, 2, 4, 8
+      combo_level = 0
     case 3, 10
-      AddScore(2*TheLevel(TableLevel))
-      AddBonus(2)
+      combo_level = 3
     case 5, 6, 9, 12
-      AddScore(4*TheLevel(TableLevel))
-      AddBonus(4)
+      combo_level = 4
     case 7, 11, 13, 14
-      AddScore(8*TheLevel(TableLevel))
-      AddBonus(8)
+      combo_level = 5
     case 15
-      AddScore(32*TheLevel(TableLevel))
-      AddBonus(32)
+      combo_level = 6
   End Select
-  out_text = "cbo " & target_timers
-  debug.print out_text
-  PlayerBallText.Text = out_text
-  B2SSet 5, out_text
-  DisplayTimer.enabled = true
+
+  if combo_level = 0 Then Exit Sub
+
+  If Spinners0Timer.enabled = True Then
+    combo_level = combo_level + 1
+    target_timers = target_timers + 16
+  End If
+
+  If Kickers0Timer.enabled = True Then
+    combo_level = combo_level + 2
+    target_timers = target_timers + 32
+  End If
+
+  If Orbits0Timer.enabled = True Then
+    combo_level = combo_level + 3
+    target_timers = target_timers + 64
+  End If
+
+  if combo_level > 0 Then
+    AddScore(combo_level*TheLevel(TableLevel))
+    AddBonus(combo_level)
+  End If
+
+  debug.print "combo level" & combo_level & " t" & target_timers
+  
+  if combo_level > 3 Then
+    combo_level = combo_level - 3
+    out_text = "c l" & combo_level
+    PlayerBallText.Text = out_text
+    B2SSet 5, out_text
+    DisplayTimer.enabled = true
+  End If
 End Sub
 
 Sub Trigger001_Hit()
@@ -1281,6 +1361,8 @@ Sub Trigger007_Hit()
 End Sub
 
 Sub Trigger009_Hit()
+  Orbits0Timer.enabled = True
+  CombosDo()
   AddScore(3*TheLevel(Trigger009.UserValue))
   AddBonus(3)
 
@@ -1313,6 +1395,8 @@ Sub Trigger013_Hit()
 End Sub
 
 Sub Trigger014_Hit()
+  Orbits0Timer.enabled = True
+  CombosDo()
   AddScore(5*TheLevel(Trigger014.UserValue))
   AddBonus(5)
   LeftShield.IsDropped = 0
@@ -1335,9 +1419,16 @@ Sub Spinner001_Timer()
 End Sub
 
 Sub Spinner001_Spin()
+  Spinners0Timer.enabled = True
+  CombosDo()
   PlaySound "fx_spinner", 0, .25, AudioPan(Spinner001), 0.25, 0, 0, 1, AudioFade(Spinner001)
   AddScore(1*TheLevel(Spinner001.UserValue))
-  If Spinner001.TimerEnabled = 0 Then MissionRun("spinner") : Spinner001.TimerEnabled = True
+  If Spinner001.TimerEnabled = 0 Then 
+    MissionRun("spinner")
+    Spinner001.TimerEnabled = True
+    Spinners0Timer.enabled = True
+    CombosDo()
+  End If
 End Sub
 
 Sub Spinner002TryUpgrade()
@@ -1357,16 +1448,24 @@ End Sub
 Sub Spinner002_Spin()
   PlaySound "fx_spinner", 0, .25, AudioPan(Spinner001), 0.25, 0, 0, 1, AudioFade(Spinner001)
   AddScore(1*TheLevel(Spinner002.UserValue))
-  If Spinner002.TimerEnabled = 0 Then MissionRun("spinner") : Spinner002.TimerEnabled = True
+  If Spinner002.TimerEnabled = 0 Then 
+    MissionRun("spinner")
+    Spinner002.TimerEnabled = True
+    Spinners0Timer.enabled = True
+    CombosDo()
+  End If
 End Sub
 
 Sub Kicker001_Hit()
+  Kickers0Timer.enabled = True
+  CombosDo()
   Kicker001.TimerEnabled = True
 End Sub
 
 Sub Kicker001Kick()
-    Kicker001.Kick 69, 14
-    PlaySound "fx_bumper"& RndNbr(4), 0, .25, AudioPan(Kicker001), 0.25, 0, 0, 1, AudioFade(Kicker001)
+  Kickers0Timer.enabled = False
+  Kicker001.Kick 69, 14
+  PlaySound "fx_bumper"& RndNbr(4), 0, .25, AudioPan(Kicker001), 0.25, 0, 0, 1, AudioFade(Kicker001)
 End Sub
 
 Sub Kicker001_Timer
@@ -1387,10 +1486,13 @@ Sub Kicker001_Timer
 End Sub
 
 Sub Kicker002_Hit()
+  Kickers0Timer.enabled = True
+  CombosDo()
   Kicker002.TimerEnabled = True
 End Sub
 
 Sub Kicker002Kick()
+  Kickers0Timer.enabled = False
   Kicker002Protector.IsDropped = 1
   Kicker002.Kick -49, 20
   PlaySound "fx_bumper"& RndNbr(4), 0, .25, AudioPan(Kicker002), 0.25, 0, 0, 1, AudioFade(Kicker002)
@@ -1415,10 +1517,13 @@ Sub Kicker002_Timer
 End Sub
 
 Sub Kicker003_Hit()
+  Kickers0Timer.enabled = True
+  CombosDo()
   Kicker003.TimerEnabled = True
 End Sub
 
 Sub Kicker003Kick()
+  Kickers0Timer.enabled = False
   Kicker003Protector.IsDropped = 1
   Kicker003.Kick 22, 22
   PlaySound "fx_bumper"& RndNbr(4), 0, .25, AudioPan(Kicker003), 0.25, 0, 0, 1, AudioFade(Kicker003)
@@ -1576,6 +1681,9 @@ Sub CheckTilt                                    'Called when table is nudged
       MultiBalled = true
       LeftFlipper.RotateToStart
       RightFlipper.RotateToStart
+      PlayerBallText.Text = "!TILT!"
+      B2SSet 5, "!TILT!"
+      DisplayTimer.enabled = true
     End If
 End Sub
 
