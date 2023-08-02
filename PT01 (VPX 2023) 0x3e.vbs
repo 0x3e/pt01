@@ -31,10 +31,10 @@ Dim EnableRetractPlunger
 EnableRetractPlunger = false 'Change to true to enable retracting the plunger at a linear speed; wait for 1 second at the maximum position; move back towards the resting position; nice for button/key plungers
 
 Const UseB2S = True
-Const TableName = "PT01 (VPX 2023) 0x3e alpha01"
+Const TableName = "PT01 (VPX 2023) 0x3e"
 
 Const GameBalls = 3
-Const EasyMode = False
+Const EasyMode = True
 
 
 Dim Credits: Credits = 2
@@ -1098,6 +1098,12 @@ Sub TargetSet3CheckUp()
       t.UserValue = level
       t.IsDropped = 0
     Next
+    SetLightLevel Tr1li017, level
+    SetLightLevel Tr1li018, level
+    SetLightLevel Tr1li015, level
+    SetLightLevel Tr1li016, level
+    SetLightLevel Tr1li009, level
+    SetLightLevel Tr1li010, level
   End If
 End Sub
 
@@ -1106,11 +1112,11 @@ Sub Target011_Dropped()
   AddScore(2*TheLevel(t.UserValue))
   AddBonus(2)
   MissionRun("target")
-  if t.UserValue < TableLevel + 1 Then
-    t.UserValue = TableLevel + 1
-    SetLightLevel Tr1li017, t.UserValue
-    SetLightLevel Tr1li018, t.UserValue
-  End If
+
+  t.UserValue = TableLevel + 1
+  SetLightLevel Tr1li017, t.UserValue
+  SetLightLevel Tr1li018, t.UserValue
+
   TargetSet3CheckUp()
 End Sub
 
@@ -1119,11 +1125,11 @@ Sub Target012_Dropped()
   AddScore(2*TheLevel(t.UserValue))
   AddBonus(2)
   MissionRun("target")
-  if t.UserValue < TableLevel + 1 Then
-    t.UserValue = TableLevel + 1
-    SetLightLevel Tr1li015, t.UserValue
-    SetLightLevel Tr1li016, t.UserValue
-  End If
+
+  t.UserValue = TableLevel + 1
+  SetLightLevel Tr1li015, t.UserValue
+  SetLightLevel Tr1li016, t.UserValue
+
   TargetSet3CheckUp()
 End Sub
 
@@ -1132,11 +1138,11 @@ Sub Target013_Dropped()
   AddScore(2*TheLevel(t.UserValue))
   AddBonus(2)
   MissionRun("target")
-  if t.UserValue < TableLevel + 1 Then
-    t.UserValue = TableLevel + 1
-    SetLightLevel Tr1li009, t.UserValue
-    SetLightLevel Tr1li010, t.UserValue
-  End If
+
+  t.UserValue = TableLevel + 1
+  SetLightLevel Tr1li009, t.UserValue
+  SetLightLevel Tr1li010, t.UserValue
+
   TargetSet3CheckUp()
 End Sub
 
@@ -1246,18 +1252,16 @@ Sub CombosDo()
 
   Select Case target_timers
     case 1, 2, 4, 8
-      combo_level = 0
+      combo_level = 1
     case 3, 10
-      combo_level = 3
+      combo_level = 2
     case 5, 6, 9, 12
-      combo_level = 4
+      combo_level = 3
     case 7, 11, 13, 14
       combo_level = 5
     case 15
       combo_level = 6
   End Select
-
-  if combo_level = 0 Then Exit Sub
 
   If Spinners0Timer.enabled = True Then
     combo_level = combo_level + 1
@@ -1274,16 +1278,18 @@ Sub CombosDo()
     target_timers = target_timers + 64
   End If
 
-  if combo_level > 0 Then
-    AddScore(combo_level*TheLevel(TableLevel))
-    AddBonus(combo_level)
-  End If
+  if combo_level < 2 Then Exit Sub
 
-  debug.print "combo level" & combo_level & " t" & target_timers
-  
-  if combo_level > 3 Then
-    combo_level = combo_level - 3
-    out_text = "c l" & combo_level
+  AddScore(combo_level*TheLevel(TableLevel))
+
+  debug.print "combo score level" & combo_level & " t" & target_timers
+
+  if combo_level > 4 Then
+    combo_level = combo_level - 4
+    AddScore(combo_level*TheLevel(TableLevel))
+    if combo_level > 3 Then AddScore(combo_level*TheLevel(TableLevel))
+    if combo_level > 5 Then AddScore(combo_level*TheLevel(TableLevel))
+    out_text = "c L" & combo_level
     PlayerBallText.Text = out_text
     B2SSet 5, out_text
     DisplayTimer.enabled = true
@@ -1415,15 +1421,14 @@ Sub Spinner001TryUpgrade()
 End Sub
 
 Sub Spinner001_Timer()
-  Spinner001.TimerEnabled = 0
+  Spinner001.TimerEnabled = False
 End Sub
 
 Sub Spinner001_Spin()
   Spinners0Timer.enabled = True
-  CombosDo()
   PlaySound "fx_spinner", 0, .25, AudioPan(Spinner001), 0.25, 0, 0, 1, AudioFade(Spinner001)
   AddScore(1*TheLevel(Spinner001.UserValue))
-  If Spinner001.TimerEnabled = 0 Then 
+  If Spinner001.TimerEnabled = False Then 
     MissionRun("spinner")
     Spinner001.TimerEnabled = True
     Spinners0Timer.enabled = True
@@ -1442,13 +1447,13 @@ Sub Spinner002TryUpgrade()
 End Sub
 
 Sub Spinner002_Timer()
-  Spinner002.TimerEnabled = 0
+  Spinner002.TimerEnabled = False
 End Sub
 
 Sub Spinner002_Spin()
   PlaySound "fx_spinner", 0, .25, AudioPan(Spinner001), 0.25, 0, 0, 1, AudioFade(Spinner001)
   AddScore(1*TheLevel(Spinner002.UserValue))
-  If Spinner002.TimerEnabled = 0 Then 
+  If Spinner002.TimerEnabled = False Then 
     MissionRun("spinner")
     Spinner002.TimerEnabled = True
     Spinners0Timer.enabled = True
