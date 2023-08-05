@@ -1478,7 +1478,7 @@ Sub Kicker001_Timer
   AddScore(2*TheLevel(k.UserValue))
   AddBonus(1)
   k.UserValue = TableLevel + 1
-  If Trigger007.UserValue > TableLevel AND MultiBalled = false AND BIP <= MaxBalls Then
+  If Trigger007.UserValue > TableLevel AND MultiBalled = false AND BIP < MaxBalls Then
     AddScore(2*TheLevel(k.UserValue))
     AddBonus(3)
     CreateABall()
@@ -1508,7 +1508,7 @@ Sub Kicker002_Timer
   AddScore(2*TheLevel(k.UserValue))
   AddBonus(1)
   k.UserValue = TableLevel + 1
-  If Trigger014.UserValue > TableLevel AND MultiBalled = false AND BIP <= MaxBalls Then
+  If Trigger014.UserValue > TableLevel AND MultiBalled = false AND BIP < MaxBalls Then
     AddScore(2*TheLevel(Kicker002.UserValue))
     AddBonus(3)
     Kicker002Protector.IsDropped = 0
@@ -1539,7 +1539,7 @@ Sub Kicker003_Timer
   AddScore(2*TheLevel(k.UserValue))
   AddBonus(1)
   k.UserValue = TableLevel + 1
-  If Trigger009.UserValue > TableLevel AND MultiBalled = false AND BIP <= MaxBalls Then
+  If Trigger009.UserValue > TableLevel AND MultiBalled = false AND BIP < MaxBalls Then
     AddScore(2*TheLevel(Kicker002.UserValue))
     AddBonus(3)
     Kicker003Protector.IsDropped = 0
