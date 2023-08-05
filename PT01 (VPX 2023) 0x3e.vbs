@@ -34,7 +34,7 @@ Const UseB2S = True
 Const TableName = "PT01 (VPX 2023) 0x3e"
 
 Const GameBalls = 3
-Const EasyMode = True
+Const EasyMode = False
 
 
 Dim Credits: Credits = 2
@@ -784,6 +784,7 @@ Sub Gate004_Hit()
     Kicker002Kick()  
     Kicker003Kick()  
     LockedBalls = 0
+    SetLightLevel Tr1li002, TableLevel + 1
     MultiBalled = true
   End If
   AddBonus(2)
