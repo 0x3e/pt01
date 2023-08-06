@@ -72,6 +72,7 @@ Dim BonusXthisLevel:BonusXthisLevel = True
 Dim LastBonus: LastBonus = 0
 Dim CurrentBall: CurrentBall = 0
 Dim OutTheGate: OutTheGate = 0
+Dim CreatedBallOut: CreatedBallOut = 1
 Dim BeforeTheFirstBall: BeforeTheFirstBall = 1
 Dim TheLevel: TheLevel = Array(1, 2, 2.4, 2.8, 3, 3.1, 3.15, 3.19, 3.2)
 Dim TableLevel: TableLevel = StartLevel
@@ -98,9 +99,9 @@ End Sub
 
 Sub SetEasyMode()
   If EasyMode Then
-    LeftShield.IsDropped = 0
-    RightShield.IsDropped = 0
-    Guardian.IsDropped = 0
+    LeftShieldUp(1)
+    RightShieldUp(1)
+    GuardianUp(1)
     EasyPegL.Visible = True
     EasyRubL.Visible = True
     EasyRubL.Collidable = True
@@ -108,9 +109,9 @@ Sub SetEasyMode()
     EasyRubR.Visible = True
     EasyRubR.Collidable = True
   Else
-    LeftShield.IsDropped = 1
-    RightShield.IsDropped = 1
-    Guardian.IsDropped = 1
+    LeftShieldUp(0)
+    RightShieldUp(0)
+    GuardianUp(0)
     EasyPegL.Visible = False
     EasyRubL.Visible = False
     EasyRubL.Collidable = False
@@ -161,13 +162,13 @@ Sub ResetHitables()
     End If
   Next
   If EasyMode Then
-    LeftShield.IsDropped = 0
-    RightShield.IsDropped = 0
-    Guardian.IsDropped = 0
+    LeftShieldUp(1)
+    RightShieldUp(1)
+    GuardianUp(1)
   Else
-    LeftShield.IsDropped = 1
-    RightShield.IsDropped = 1
-    Guardian.IsDropped = 1
+    LeftShieldUp(0)
+    RightShieldUp(0)
+    GuardianUp(0)
   End If
 End Sub
 
@@ -193,7 +194,6 @@ Sub SetLevel(level)
 End Sub
 
 Sub ResetForNewPlayerBall()
-  debug.print "ResetForNewPlayerBall level:" & PlayerLevel(CurrentPlayer)
   AddScore(0)
   CurrentBonus = 0
   CurrentPlayer = CurrentPlayer + 1
@@ -220,6 +220,76 @@ Sub ResetForNewPlayerBall()
   Tilted = False
   For each xx in GI:xx.State = 1: Next
   CreateABall()
+  debug.print "ResetForNewPlayerBall Player: " & currentPlayer & " level:" & TableLevel
+End Sub
+
+Sub LeftShield_Timer()
+  If LeftShieldW.UserValue > 15 Then
+    LeftShieldW.Collidable = 0
+    LeftShieldW.Visible = 0
+    LeftShield.TimerEnabled = 0
+  Else
+    LeftShieldW.Collidable = 1
+    LeftShieldW.Visible = 1
+    LeftShieldW.UserValue = LeftShieldW.UserValue + 1
+    LeftShieldW.LeftWallHeight = LeftShieldW.UserValue * 3
+  End If 
+End Sub
+
+Sub LeftShieldUp(up)
+  If up Then
+    LeftShield.IsDropped = 0
+    LeftShieldW.UserValue = 0
+    LeftShield.TimerEnabled = 1
+  Else
+    LeftShield.IsDropped = 1
+  End If
+End Sub
+
+Sub RightShield_Timer()
+  'debug.print "RightShieldW.UserValue: " & RightShieldW.LeftWallHeight & " v: " & RightShieldW.Collidable
+  If RightShieldW.UserValue > 15 Then
+    RightShieldW.Collidable = 0
+    RightShieldW.VisibleLeftWallHeight = 0
+    RightShield.TimerEnabled = 0
+  Else
+    RightShieldW.Collidable = 1
+    RightShieldW.UserValue = RightShieldW.UserValue + 1
+    RightShieldW.LeftWallHeight = RightShieldW.UserValue * 3
+  End If 
+End Sub
+
+Sub RightShieldUp(up)
+  If up Then
+    RightShield.IsDropped = 0
+    RightShieldW.UserValue = 0
+    RightShield.TimerEnabled = 1
+  Else
+    RightShield.IsDropped = 1
+  End If
+End Sub
+
+Sub Guardian_Timer()
+  If GuardianW.UserValue > 15 Then
+    GuardianW.Collidable = 0
+    GuardianW.Visible = 0
+    Guardian.TimerEnabled = 0
+  Else
+    GuardianW.Collidable = 1
+    GuardianW.Visible = 1
+    GuardianW.UserValue = GuardianW.UserValue + 1
+    GuardianW.LeftWallHeight = GuardianW.UserValue * 3
+  End If 
+End Sub
+
+Sub GuardianUp(up)
+  If up Then
+    Guardian.IsDropped = 0
+    GuardianW.UserValue = 0
+    Guardian.TimerEnabled = 1
+  Else
+    Guardian.IsDropped = 1
+  End If
 End Sub
 
 Sub UpdateScores()
@@ -326,6 +396,7 @@ Sub CreateABall()
 		BallRelease.Kick 90, 7
 		PlaySound SoundFX("ballrelease",DOFContactors), 0,1,AudioPan(BallRelease),0.25,0,0,1,AudioFade(BallRelease)
 		BIP = BIP + 1
+        CreatedBallOut = 0
 End Sub
 
 Sub CreditsPlayerBall()
@@ -454,13 +525,14 @@ Sub Gate001_Hit()
   OutTheGate = 1
   SetBonusLights()
   BeforeTheFirstBall = 0
+  CreatedBallOut = 1
   Trigger012.Enabled = 0
   Trigger013.Enabled = 0
   Trigger014.Enabled = 0
 End Sub
 
 Sub Gate001_Timer
-  debug.print "gate001 timer"
+  'debug.print "gate001 timer"
   Gate001.TimerEnabled = 0
   Trigger012.Enabled = 1
   Trigger013.Enabled = 1
@@ -468,7 +540,7 @@ Sub Gate001_Timer
 End Sub
 
 Sub Gate002_Hit()
-  debug.print "gate002 hit"
+  'debug.print "gate002 hit"
   AddBonus(1)
   If Trigger012.Enabled = false Then
     Gate002.TimerEnabled = 1
@@ -484,7 +556,7 @@ Sub Gate002_Hit()
 End Sub
 
 Sub Gate002_Timer
-  debug.print "gate002 timer"
+  'debug.print "gate002 timer"
   Gate002.TimerEnabled = 0
   Gate004.Collidable = 1
   Gate005.Collidable = 1
@@ -500,7 +572,7 @@ Sub Gate003_Hit()
   AddBonus(1)
   If Trigger012.Enabled = true Then
     Gate003.TimerEnabled = 1
-    debug.print "gate003 hit start timer"
+    'debug.print "gate003 hit start timer"
     Gate004.Collidable = False
     Gate005.Collidable = False
   End If
@@ -535,7 +607,7 @@ Function MissionGet()
 End Function
 
 Sub Gate003_Timer()
-  debug.print "gate003 timer"
+  'debug.print "gate003 timer"
   Gate003.TimerEnabled = 0
   Gate005.TimerEnabled = 1
   Gate004.Collidable = True
@@ -605,9 +677,9 @@ Sub MissionRun(DoThing)
         SetLightLevel Tr1li001, TableLevel
         AddScore(15*TheLevel(TableLevel))
         AddBonus(15)
-        If LeftShield.IsDropped = 0 AND RightShield.IsDropped = 0 Then Guardian.IsDropped = 0
-        If RightShield.IsDropped = 0 Then LeftShield.IsDropped = 0
-        RightShield.IsDropped = 0
+        If LeftShield.IsDropped = 0 AND RightShield.IsDropped = 0 Then GuardianUp(1)
+        If RightShield.IsDropped = 0 Then LeftShieldUp(1)
+        RightShieldUp(1)
         MissionDone(OnMission) = true
         MissionDisplay "mm0" & OnMission, "done"
         OnMission = 0
@@ -633,9 +705,9 @@ Sub MissionRun(DoThing)
         SetLightLevel Tr1li001, TableLevel
         AddScore(10*TheLevel(TableLevel))
         AddBonus(15)
-        If LeftShield.IsDropped = 0 AND RightShield.IsDropped = 0 Then Guardian.IsDropped = 0
-        RightShield.IsDropped = 0
-        LeftShield.IsDropped = 0
+        If LeftShield.IsDropped = 0 AND RightShield.IsDropped = 0 Then GuardianUp(1)
+        RightShieldUp(1)
+        LeftShieldUp(1)
         MissionDone(OnMission) = true
         OnMission = 0
       Else
@@ -652,9 +724,9 @@ Sub MissionRun(DoThing)
         SetLightLevel Tr1li001, TableLevel
         AddScore(10*TheLevel(TableLevel))
         AddBonus(15)
-        If LeftShield.IsDropped = 0 AND RightShield.IsDropped = 0 Then Guardian.IsDropped = 0
-        If LeftShield.IsDropped = 0 Then RightShield.IsDropped = 0
-        LeftShield.IsDropped = 0
+        If LeftShield.IsDropped = 0 AND RightShield.IsDropped = 0 Then GuardianUp(1)
+        If LeftShield.IsDropped = 0 Then RightShieldUp(1)
+        LeftShieldUp(1)
         MissionDone(OnMission) = true
         MissionDisplay "mm0" & OnMission, "done"
         OnMission = 0
@@ -680,9 +752,9 @@ Sub MissionRun(DoThing)
         SetLightLevel Tr1li001, TableLevel
         AddScore(20*TheLevel(TableLevel))
         AddBonus(20)
-        If LeftShield.IsDropped = 0 AND RightShield.IsDropped = 0 Then Guardian.IsDropped = 0
-        If RightShield.IsDropped = 0 Then LeftShield.IsDropped = 0
-        RightShield.IsDropped = 0
+        If LeftShield.IsDropped = 0 AND RightShield.IsDropped = 0 Then GuardianUp(1)
+        If RightShield.IsDropped = 0 Then LeftShieldUp(1)
+        RightShieldUp(1)
         MissionDone(OnMission) = true
         MissionDisplay "mm0" & OnMission, "done"
         OnMission = 0
@@ -708,9 +780,9 @@ Sub MissionRun(DoThing)
         SetLightLevel Tr1li001, TableLevel
         AddScore(20*TheLevel(TableLevel))
         AddBonus(20)
-        RightShield.IsDropped = 0
-        LeftShield.IsDropped = 0
-        Guardian.IsDropped = 0
+        RightShieldUp(1)
+        LeftShieldUp(1)
+        GuardianUp(1)
         MissionDone(OnMission) = true
         MissionDisplay "mm0" & OnMission, "done"
         OnMission = 0
@@ -791,7 +863,7 @@ Sub Gate004_Hit()
 End Sub
 
 Sub Gate004_Timer
-  debug.print "gate004 timer"
+  'debug.print "gate004 timer"
   Gate004.TimerEnabled = False
   Gate003.Collidable = True
   Gate00t2.Enabled = 1
@@ -802,7 +874,7 @@ Sub Gate00t2_Init()
 End Sub
 
 Sub Gate00t2_Timer()
-  debug.print "gate00t2 timer"
+  'debug.print "gate00t2 timer"
   Gate00t2.Enabled = 0
   Gate002.Collidable = True
 End Sub
@@ -812,7 +884,7 @@ Sub Gate005_Hit()
 End Sub
 
 Sub Gate005_Timer()
-  debug.print "gate005 timer"
+  'debug.print "gate005 timer"
   Gate005.Collidable = True
   Gate005.TimerEnabled = False
 End Sub
@@ -862,7 +934,7 @@ Sub TargetSet2CheckUp()
     Bumper001TryUpgrade()
     Spinner001TryUpgrade()
     Trigger013.UserValue = level
-    Guardian.IsDropped = 0
+    GuardianUp(1)
   End If
   If all_down Then
     BonusXTargets(2) = True
@@ -925,7 +997,7 @@ Sub TargetSet1CheckUp()
     If level < t.UserValue Then level = t.UserValue
   Next
   If all_down AND Kicker003.UserValue = level Then
-    LeftShield.IsDropped = 0
+    LeftShieldUp(1)
   End If
   If all_down Then
     BonusXTargets(1) = True
@@ -933,7 +1005,7 @@ Sub TargetSet1CheckUp()
     AddScore(5*TheLevel(level))
     AddBonus(5)
     Kicker003.UserValue = level
-    RightShield.IsDropped = 0
+    RightShieldUp(1)
     SetLightLevel Tr1li011, level
     SetLightLevel Tr1li012, level
     SetLightLevel Tr1li013, level
@@ -1067,18 +1139,18 @@ Sub TargetSet3CheckUp()
   Targets3Timer.enabled = True
   CombosDo()
   For each t in Targets3
-    debug.print "TargetSet3 t:" & t.Name & "isdropped:" & t.IsDropped
+    'debug.print "TargetSet3 t:" & t.Name & "isdropped:" & t.IsDropped
     If t.IsDropped = 0 Then all_down = false
     If level < t.UserValue Then level = t.UserValue
   Next
-  debug.print "TargetSet3CheckUp " & all_down
+  'debug.print "TargetSet3CheckUp " & all_down
   If Target011.IsDropped = 1 AND Target012.IsDropped = 1 AND Trigger007.UserValue < Target011.UserValue Then
     Trigger007.UserValue = level
   End If
   If all_down AND ( level = Trigger007.UserValue ) Then
     Bumper002TryUpgrade()
     Spinner002TryUpgrade()
-    LeftShield.IsDropped = 0
+    LeftShieldUp(1)
     Trigger010.UserValue = level
   End If
   If all_down Then
@@ -1148,7 +1220,7 @@ Sub Target013_Dropped()
 End Sub
 
 Sub TriggerSet1CheckUpLevel()
-  debug.print "Trigger Set 1 check up level"
+  'debug.print "Trigger Set 1 check up level"
   Dim t, i, tmp, level, h: tmp = 0 : i = 0
   Dim  bonus_level : bonus_level = Fix( CurrentBonus / 55 )
   AddScore(3*TheLevel(TableLevel))
@@ -1160,8 +1232,8 @@ Sub TriggerSet1CheckUpLevel()
   If ((tmp Mod i) = 0) Then
     AddScore(15*TheLevel(TableLevel))
     level = Fix(tmp / i)
-    debug.print "Trigger Set 1 Complete"
-    debug.print "level:" & level & " bonus_level:" & tmp
+    'debug.print "Trigger Set 1 Complete"
+    'debug.print "level:" & level & " bonus_level:" & tmp
 
     Select Case level
       Case 1 : If bonus_level > 0 Then TableLevel = 1 : AddScore(20*TheLevel(TableLevel))
@@ -1227,6 +1299,7 @@ End Sub
 Sub CombosDo()
   Dim target_timers : target_timers = 0
   Dim combo_level : combo_level = 0
+  Dim combo_score : combo_score = 0
   Dim out_text
 
   If Targets1Timer.enabled = True Then 
@@ -1250,7 +1323,6 @@ Sub CombosDo()
     target_timers = target_timers + 8
   End If
 
-
   Select Case target_timers
     case 1, 2, 4, 8
       combo_level = 1
@@ -1259,9 +1331,9 @@ Sub CombosDo()
     case 5, 6, 9, 12
       combo_level = 3
     case 7, 11, 13, 14
-      combo_level = 5
-    case 15
       combo_level = 6
+    case 15
+      combo_level = 9
   End Select
 
   If Spinners0Timer.enabled = True Then
@@ -1279,22 +1351,24 @@ Sub CombosDo()
     target_timers = target_timers + 64
   End If
 
-  if combo_level < 2 Then Exit Sub
+  Select Case target_timers
+    case 1, 2, 4, 8, 16, 32, 48, 64, 80: Exit Sub
+  End Select
 
-  AddScore(combo_level*TheLevel(TableLevel))
-
-  debug.print "combo score level" & combo_level & " t" & target_timers
-
-  if combo_level > 4 Then
-    combo_level = combo_level - 4
-    AddScore(combo_level*TheLevel(TableLevel))
-    if combo_level > 3 Then AddScore(combo_level*TheLevel(TableLevel))
-    if combo_level > 5 Then AddScore(combo_level*TheLevel(TableLevel))
+  combo_score = combo_level
+  'debug.print "combo level " & combo_level
+  if combo_level > 3 Then
+    combo_level = combo_level - 3
+    combo_score = combo_score + combo_level + 1
+    if combo_level > 3 Then combo_score = combo_score + combo_level
+    if combo_level > 5 Then combo_score = combo_score + combo_level
     out_text = "c L" & combo_level
     PlayerBallText.Text = out_text
     B2SSet 5, out_text
     DisplayTimer.enabled = true
   End If
+  AddScore(combo_score*TheLevel(TableLevel))
+  'debug.print "combo score " & combo_score & " t" & target_timers
 End Sub
 
 Sub Trigger001_Hit()
@@ -1373,10 +1447,10 @@ Sub Trigger009_Hit()
   AddScore(3*TheLevel(Trigger009.UserValue))
   AddBonus(3)
 
-  If LeftShield.IsDropped = 0 AND RightShield.IsDropped = 0 Then Guardian.IsDropped = 0
-  If EasyMode AND LeftShield.IsDropped = 0 Then RightShield.IsDropped = 0
+  If LeftShield.IsDropped = 0 AND RightShield.IsDropped = 0 Then GuardianUp(1)
+  If EasyMode AND LeftShield.IsDropped = 0 Then RightShieldUp(1)
 
-  LeftShield.IsDropped = 0
+  LeftShieldUp(1)
 End Sub
 
 Sub Trigger010_Hit()
@@ -1406,9 +1480,9 @@ Sub Trigger014_Hit()
   CombosDo()
   AddScore(5*TheLevel(Trigger014.UserValue))
   AddBonus(5)
-  LeftShield.IsDropped = 0
-  Guardian.IsDropped = 0
-  RightShield.IsDropped = 0
+  LeftShieldUp(1)
+  GuardianUp(1)
+  RightShieldUp(1)
 End Sub
 
 Sub Spinner001TryUpgrade()
@@ -1482,7 +1556,7 @@ Sub Kicker001_Timer
   If Trigger007.UserValue > TableLevel AND MultiBalled = false AND BIP < MaxBalls Then
     AddScore(2*TheLevel(k.UserValue))
     AddBonus(3)
-    CreateABall()
+    If CreatedBallOut = 1 Then CreateABall()
     LockedBalls = LockedBalls + 1
     SetLightLevel Tr1li002, TableLevel + 1
   Else
@@ -1513,7 +1587,7 @@ Sub Kicker002_Timer
     AddScore(2*TheLevel(Kicker002.UserValue))
     AddBonus(3)
     Kicker002Protector.IsDropped = 0
-    CreateABall()
+    If CreatedBallOut = 1 Then CreateABall()
     LockedBalls = LockedBalls + 1
     SetLightLevel Tr1li002, TableLevel + 1
   Else
@@ -1544,7 +1618,7 @@ Sub Kicker003_Timer
     AddScore(2*TheLevel(Kicker002.UserValue))
     AddBonus(3)
     Kicker003Protector.IsDropped = 0
-    CreateABall()
+    If CreatedBallOut = 1 Then CreateABall()
     LockedBalls = LockedBalls + 1
     SetLightLevel Tr1li002, TableLevel + 1
   Else
