@@ -1,4 +1,3 @@
-
 # Rules and scoring
  
 I like watching and playing classics. The games are fast and the scores low. I have not finished working on the scoring and keep trying to get it lower.
