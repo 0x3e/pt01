@@ -1,6 +1,6 @@
 MD5 hash of C:\Users\user1\Documents\pt01\PT01 (VPX 2023) 0x3e.vpx:
-6c82bc75bc7cb9bf23e7d36075a797d2
+04d9d6a94d9f94d45ec57d112c6fe451
 CertUtil: -hashfile command completed successfully.
 SHA256 hash of C:\Users\user1\Documents\pt01\PT01 (VPX 2023) 0x3e.vpx:
-b42279fd00eb706e61f6fa7fe61eb689eeb0f57cf782597fc1233f457e32f8a4
+bc1e9b5b1b04f3ce8d883b1228cf1e6030d3c0d4d13ea8011c2bd33be22f8039
 CertUtil: -hashfile command completed successfully.
